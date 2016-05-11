@@ -8,6 +8,7 @@ import tornado.escape
 import datetime
 import logging
 import traceback
+from auth.config import errors
 from auth.config import token_timedelta
 from auth.token import Encryption
 from auth.db import conn
@@ -16,7 +17,7 @@ from auth.db import conn
 class LogInHangdler(tornado.web.RequestHandler):
 
     def post(self):
-        response = {'err_code': 100, 'err_msg': 'other',
+        response = {'err_code': errors['other error'], 'err_msg': 'other error',
                     'result': {'account': 'null', 'user_name': 'null', 'token': 'null'}}
         try:
             payload = tornado.escape.json_decode(self.request.body)
@@ -38,12 +39,12 @@ class LogInHangdler(tornado.web.RequestHandler):
             logging.error(traceback.format_exc())
             return
         if not select_result:
-            response['err_code'] = 102
+            response['err_code'] = errors['user not exists']
             response['err_msg'] = 'user not exists'
             self.write(tornado.escape.json_encode(response))
             return
         if select_result[0][1] == passwd:
-            response['err_code'] = 0
+            response['err_code'] = errors['success']
             response['err_msg'] = 'success'
             expiration_time = datetime.datetime.now() + token_timedelta
             token = Encryption.encode({'uid': select_result[0][2], 'expiration_time': str(expiration_time)})
@@ -52,7 +53,7 @@ class LogInHangdler(tornado.web.RequestHandler):
             self.write(tornado.escape.json_encode(response))
             return
         else:
-            response['err_code'] = 101
+            response['err_code'] = errors['incorrect password']
             response['err_msg'] = 'incorrect password'
             self.write(tornado.escape.json_encode(response))
             return

@@ -9,6 +9,7 @@ import datetime
 import logging
 import traceback
 from auth.config import token_timedelta
+from auth.config import errors
 from auth.token import Encryption
 from auth.db import conn
 
@@ -16,7 +17,7 @@ from auth.db import conn
 class SignUpHandler(tornado.web.RequestHandler):
 
     def post(self):
-        response = {'err_code': 100, 'err_msg': 'other',
+        response = {'err_code': errors['other error'], 'err_msg': 'other error',
                     'result': {'account': 'null', 'user_name': 'null', 'token': 'null'}}
         try:
             payload = tornado.escape.json_decode(self.request.body)
@@ -48,7 +49,7 @@ class SignUpHandler(tornado.web.RequestHandler):
                 logging.error(traceback.format_exc())
                 self.write(tornado.escape.json_encode(response))
                 return
-            response['err_code'] = 0
+            response['err_code'] = errors['success']
             response['err_msg'] = 'success'
             try:
                 uid = conn.execute("select uid from userinfo_tbl where account='%s'" % account)
@@ -62,7 +63,7 @@ class SignUpHandler(tornado.web.RequestHandler):
             self.write(tornado.escape.json_encode(response))
             return
         else:
-            response['err_code'] = 103
+            response['err_code'] = errors['user already exists']
             response['err_msg'] = 'user already exists'
             self.write(tornado.escape.json_encode(response))
             return

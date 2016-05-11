@@ -7,6 +7,7 @@ import tornado.web
 import tornado.escape
 import auth.sign_up
 import auth.log_in
+import auth.reset_request
 import logging
 from tornado.options import define, options
 
@@ -22,7 +23,8 @@ if __name__ == "__main__":
 
     tornado.options.parse_command_line()
     app = tornado.web.Application(
-        handlers=[(r'/sign_up', auth.sign_up.SignUpHandler), (r'/log_in', auth.log_in.LogInHangdler)],
+        handlers=[(r'/sign_up', auth.sign_up.SignUpHandler), (r'/log_in', auth.log_in.LogInHangdler),
+                  (r'/reset_request', auth.reset_request.ResetRequestHandler)],
     )
     http_server = tornado.httpserver.HTTPServer(app)
     http_server.listen(options.port)

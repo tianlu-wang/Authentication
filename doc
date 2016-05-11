@@ -53,7 +53,7 @@ POST /auth/reset_request
 POST DATA:
 {
     'param':{
-        “email_address”:xxx,
+        “email”:xxx,
     }
 }
 }
