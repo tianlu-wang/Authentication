@@ -8,8 +8,8 @@ import tornado.escape
 import datetime
 import logging
 import traceback
-from auth.config import token_timedelta
-from auth.config import errors
+import MySQLdb
+from auth.config import token_timedelta, errors, mysql
 from auth.token import Encryption
 from auth.db import conn
 
@@ -22,28 +22,31 @@ class SignUpHandler(tornado.web.RequestHandler):
         try:
             payload = tornado.escape.json_decode(self.request.body)
         except Exception, e:
-            self.write(response)
+            self.write(tornado.escape.json_encode(response))
             logging.error(logging.error(traceback.format_exc()))
             return
         account = payload['param']['account']
         user_name = payload['param']['user_name']
         passwd = payload['param']['passwd']
-        logging.info('account and user_name and passwd in payload: '+ account + ' ' + user_name + ' ' + passwd)
+        logging.info('account and passwd in payload: '+ account + ' ' + user_name + ' ' + passwd)
 
-        select_sql = "select account from userinfo_tbl where account = '%s'" % account
+        select_sql = "select account from %s where account = '%s'" % \
+                     (MySQLdb.escape_string(mysql['table_name']), MySQLdb.escape_string(account))
         try:
             select_result = conn.execute(select_sql)
             logging.info(select_result)
         except Exception, e:
-            self.write(response)
+            self.write(tornado.escape.json_encode(response))
             logging.error(traceback.format_exc())
             return
         if not select_result:
             try:
-                insert_sql = "insert into userinfo_tbl(account, passwd, email, user_name, create_time, " \
-                             "last_login_time, write_time) values " \
-                             "('%s', '%s', '%s', '%s', now(), now(), now())" % \
-                             (account, passwd, account, user_name)  # TODO: account may be phone number
+                print account+"#######"+passwd+"#########"+user_name
+                insert_sql = "insert into %s(account, passwd, email, user_name) values " \
+                             "('%s', '%s', '%s', '%s')" % \
+                             (MySQLdb.escape_string(mysql['table_name']), MySQLdb.escape_string(account),
+                              MySQLdb.escape_string(passwd),
+                              MySQLdb.escape_string(account), MySQLdb.escape_string(user_name))  # TODO: account may be phone number
                 conn.execute(insert_sql)
             except Exception, e:
                 logging.error(traceback.format_exc())
@@ -52,7 +55,8 @@ class SignUpHandler(tornado.web.RequestHandler):
             response['err_code'] = errors['success']
             response['err_msg'] = 'success'
             try:
-                uid = conn.execute("select uid from userinfo_tbl where account='%s'" % account)
+                uid = conn.execute("select uid from %s where account='%s'" %
+                                   (MySQLdb.escape_string(mysql['table_name']), MySQLdb.escape_string(account)))
             except Exception, e:
                 logging.error(traceback.format_exc())
                 self.write(tornado.escape.json_encode(response))

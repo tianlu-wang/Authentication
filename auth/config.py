@@ -8,10 +8,12 @@ mysql = {'host': 'localhost',
          'passwd': '123',
          'db': 'TORNADO',
          'port': 3306,
-         'connect_timeout': 3}
+         'connect_timeout': 3,
+         'table_name': 'userinfo_tbl'}
 secret = 'password'
 algorithm = 'HS256'
 token_timedelta = datetime.timedelta(days=1)
+reset_timedelta = datetime.timedelta(hours=1)
 errors = {'other error': 100,
           'incorrect password': 101,
           'user not exists': 102,

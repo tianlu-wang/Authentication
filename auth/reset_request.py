@@ -9,8 +9,10 @@ import datetime
 import logging
 import traceback
 import re
+import MySQLdb
+from auth.db import conn
 from auth.token import Encryption
-from auth.config import errors
+from auth.config import errors, mysql, reset_timedelta
 
 
 class ResetRequestHandler(tornado.web.RequestHandler):
@@ -21,20 +23,35 @@ class ResetRequestHandler(tornado.web.RequestHandler):
         try:
             payload = tornado.escape.json_decode(self.request.body)
         except Exception, e:
-            self.write(response)
+            self.write(tornado.escape.json_encode(response))
             logging.error(traceback.format_exc())
             return
+
         email = payload['param']['email']
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             response['err_code'] = errors['illegal email address']
             response['err_msg'] = 'illegal email address'
-            self.write(response)
+            self.write(tornado.escape.json_encode(response))
             logging.info('input is not a valid email address')
             return
         else:
-            token = Encryption.encode({'email': email, 'expiration_time': str(datetime.datetime.now())})
-            logging.info('/auth/reset_password?'+token)
+            try:
+                test = "select uid from %s where email='%s'" % \
+                       (MySQLdb.escape_string(mysql['table_name']), MySQLdb.escape_string(email))
+                print test
+                uid = conn.execute(test)
+                uid = uid[0][0]
+                logging.info('the email address %s belongs to user %d' % (email, uid))
+            except Exception,e:
+                response['err_code'] = errors['user not exists']
+                response['err_msg'] = 'user not exists'
+                self.write(tornado.escape.json_encode(response))
+                logging.info('cannot find the uid according to the email address')
+                return
+            token = Encryption.encode({'uid': uid, 'expiration_time': str(datetime.datetime.now() + reset_timedelta)})
             response['err_code'] = errors['success']
             response['err_msg'] = 'success'
-            self.write(response)
+            self.write(tornado.escape.json_encode(response))
+            logging.info('/verify?'+token)
+            return
 
