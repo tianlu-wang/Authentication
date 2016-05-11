@@ -1,0 +1,103 @@
+POST /auth/signup
+POST DATA:
+{
+    param:{
+    “account”:xxxx,
+    “user_name”:xxx,
+    “passwd”:xxxx
+    }
+}
+RESP DATA:
+{
+    “err_code”:xxxx
+    “err_msg”:xxxx
+    “result”:{
+    “account”:xxxx,
+    “user_name”:xxx,
+    “token”:xxx(id and expiration time)
+    }
+}
+
+
+POST /auth/login
+POST DATA:
+{
+    param:{
+    "account": xxx,
+    “user_name”:xxx
+    "passwd”: xxx
+    }
+}
+RESP DATA:
+{
+    "err_code": xx,
+    "err_msg": "xxx",
+    “result”: {
+    “account”:xxxx,
+    “user_name”:xxxx
+    “token”:xxxx(UID and expiration time }
+
+GET  /auth/verify?token=xxx
+
+RESP DATA:
+{
+    “err_code”:xx,
+    “err_msg”:xx,
+    “result”:{
+    “account”:xxxx,
+    “uid”:xxx
+    }
+}
+
+POST /auth/reset_request
+POST DATA:
+{
+    'param':{
+        “email_address”:xxx,
+    }
+}
+}
+RESP DATA:
+{
+    “err_code”:xxx,
+    “err_msg”:xxxx,
+    send email in this step but do not need to respond anything in the form of token
+}
+
+POST /auth/reset_password
+POST DATA:
+{
+    “account”:xxx,
+    “user_name”:xxx
+    “new_passwd”:xxx
+}
+
+RESP DATA:
+{
+    "err_code": xx,
+    "err_msg": "xxx",
+    “result”: {
+    “account”:xxxx,
+    “user_name”:xxx,
+    “token”:xxx(id and expiration time)
+     }
+}
+
+数据库表：
+
+ID    account(primary key)    passwd   user_name email  create_time last_login_time write_time
+
+
+err_code: 同一错误错误码相同 否则不同
+
+100: other
+101: password wrong
+102: user not existed
+103: user already exists
+104: timeout
+105: illegal email address
+105: illegal user
+0: success
+
+
+get row count to encrypt or get the last userID
