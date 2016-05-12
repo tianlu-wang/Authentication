@@ -19,14 +19,24 @@ class VerifyHandler(tornado.web.RequestHandler):
         response = {'err_code': errors['other error'], 'err_msg': 'other error',
                     'result': {'account': 'null', 'uid': 'null'}}
         try:
-            token = Encryption.decode(self.request.query)
+            token = Encryption.decode(self.get_argument('token'))
+            print token
         except Exception, e:
             response['err_code'] = errors['illegal user']
+            response['err_msg'] = 'illegal user'
             self.write(tornado.escape.json_encode(response))
             logging.info('token verify failed')
             return
 
-        expiration_time = datetime.datetime.strptime(token['expiration_time'], "%Y-%m-%d %H:%M:%S.%f")
+        type = token.get('type', '').lower()
+        if type != 'log_in':
+            response['err_code'] = errors['illegal user']
+            response['err_msg'] = 'illegal user'
+            self.write(tornado.escape.json_encode(response))
+            logging.info('token verify failed')
+            return
+
+        expiration_time = datetime.datetime.strptime(token.get('expiration_time', ''), "%Y-%m-%d %H:%M:%S.%f")
         if expiration_time < datetime.datetime.now():
             response['err_code'] = errors['timeout']
             response['err_msg'] = 'timeout'

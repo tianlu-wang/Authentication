@@ -96,8 +96,40 @@ err_code: 同一错误错误码相同 否则不同
 103: user already exists
 104: timeout
 105: illegal email address
-105: illegal user
+106: illegal user
+107: incorrect account
 0: success
 
+test:
+1. sign_up:
+    {"parm":{"account":"tianluwang@zju.edu.cn","passwd":"tianluwang new passwd"}}    {"err_msg": "input cannot be null", "result": {"account": "null", "user_name": "null", "token": "null"}, "err_code": 108}
+    {"param":{"account":"tianluwang@zju.edu.cn","passwd":"tianluwang new passwd"}}   108
+    {"param":{"account":"bbb@zju.edu.cn","passd":"bbb passwd","user_name":"bbb"}}    108
+    {"param":{"account":"bbb@zju.edu.cn","passwd":"bbb passwd","user_name":"bbb"}}   {"err_msg": "success", "result": {"account": "bbb@zju.edu.cn", "user_name": "bbb", "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmF0aW9uX3RpbWUiOiIyMDE2LTA1LTEzIDExOjI4OjE2LjUzMjQ1MyIsInR5cGUiOiJzaWduX3VwIiwidWlkIjpbWzNdXX0.46ZHUYTraZjC4UW90z5Pmg27f83U3PBppPhYSkyJKWc"}, "err_code": 0}
+    same 103
+2. log_in:
+    {"param":{"account":"ccc@zju.edu.cn","passwd":"ccc passwd"}}  {"err_msg": "success", "result": {"account": "ccc@zju.edu.cn", "user_name": "ccc", "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmF0aW9uX3RpbWUiOiIyMDE2LTA1LTEzIDExOjM5OjMzLjA4ODIzOSIsInR5cGUiOiJsb2dfaW4iLCJ1aWQiOjR9.nbEYoclUDkVKQx3RTlDcWOXdLDoc_WW8VLZOt0d3ZBI"}, "err_code": 0}
+    {"param":{"account":"ccc@zju.edu.cn","passwd":"bbb passwd"}}   {"err_msg": "incorrect password", "result": {"account": "null", "user_name": "null", "token": "null"}, "err_code": 101}
+    ddd  {"err_msg": "user not exists", "result": {"account": "null", "user_name": "null", "token": "null"}, "err_code": 102}
 
-get row count to encrypt or get the last userID
+3. reset_request:
+    {"param":{"email":"aaa@zju.edu.cn"}}  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmF0aW9uX3RpbWUiOiIyMDE2LTA1LTEyIDEyOjUwOjA1LjQ1NjAyMCIsInR5cGUiOiJyZXNldCIsInVpZCI6Mn0.mjxmt255qvobv_QDW8A8yQsQjbUiElPRoCKpZBj7es4
+    {"param":{"email":"aaazju.edu.cn"}}  illegal email address
+    {"err_msg": "user not exists", "err_code": 102}
+
+4. reset_passwd:
+   timeout after an hour
+   log_in token illegal user
+   incorrect
+
+5. verify:
+   reset_request token : {"err_msg": "illegal user", "result": {"account": "null", "uid": "null"}, "err_code": 106}
+   sign_up token {"err_msg": "success", "result": {"account": "fff@zju.edu.cn", "uid": 6}, "err_code": 0}
+   user not exist
+   success
+
+column:  add fb_id, account-> FB_3180498
+token=
+auth/facebook_oauth
+auth/facebook_oauth_url
+

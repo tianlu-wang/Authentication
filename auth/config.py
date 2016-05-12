@@ -21,4 +21,6 @@ errors = {'other error': 100,
           'timeout': 104,
           'illegal email address': 105,
           'illegal user': 106,
+          'incorrect account': 107,
+          'input cannot be null': 108,
           'success': 0}

@@ -25,8 +25,8 @@ class LogInHangdler(tornado.web.RequestHandler):
             self.write(tornado.escape.json_encode(response))
             logging.error(traceback.format_exc())
             return
-        account = payload['param']['account']
-        passwd = payload['param']['passwd']
+        account = payload.get('param', {}).get('account', '').lower()
+        passwd = payload.get('param', {}).get('passwd', '').lower()
         logging.info('account and user_name and passwd in payload: ' + account + ' ' + passwd)
         
         select_sql = "select account, passwd, uid, user_name from %s where account = '%s'" %\
@@ -47,7 +47,7 @@ class LogInHangdler(tornado.web.RequestHandler):
             response['err_code'] = errors['success']
             response['err_msg'] = 'success'
             expiration_time = datetime.datetime.now() + token_timedelta
-            token = Encryption.encode({'uid': select_result[0][2], 'expiration_time': str(expiration_time)})
+            token = Encryption.encode({'uid': select_result[0][2], 'expiration_time': str(expiration_time), 'type': 'log_in'})
             response['result'] = {'account': account, 'user_name': select_result[0][3], 'token': token}
             self.write(tornado.escape.json_encode(response))
 

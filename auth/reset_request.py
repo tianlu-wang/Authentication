@@ -27,7 +27,7 @@ class ResetRequestHandler(tornado.web.RequestHandler):
             logging.error(traceback.format_exc())
             return
 
-        email = payload['param']['email']
+        email = payload.get('param', {}).get('email', '').lower()
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             response['err_code'] = errors['illegal email address']
             response['err_msg'] = 'illegal email address'
@@ -48,10 +48,10 @@ class ResetRequestHandler(tornado.web.RequestHandler):
                 self.write(tornado.escape.json_encode(response))
                 logging.info('cannot find the uid according to the email address')
                 return
-            token = Encryption.encode({'uid': uid, 'expiration_time': str(datetime.datetime.now() + reset_timedelta)})
+            token = Encryption.encode({'uid': uid, 'expiration_time': str(datetime.datetime.now() + reset_timedelta), 'type': 'reset'})
             response['err_code'] = errors['success']
             response['err_msg'] = 'success'
             self.write(tornado.escape.json_encode(response))
-            logging.info('/verify?'+token)
+            logging.info(token)
             return
 

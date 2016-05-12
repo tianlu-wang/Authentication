@@ -25,9 +25,18 @@ class SignUpHandler(tornado.web.RequestHandler):
             self.write(tornado.escape.json_encode(response))
             logging.error(logging.error(traceback.format_exc()))
             return
-        account = payload['param']['account']
-        user_name = payload['param']['user_name']
-        passwd = payload['param']['passwd']
+
+        account = payload.get('param', {}).get('account', '').lower()
+        user_name = payload.get('param', {}).get('user_name', '').lower()
+        passwd = payload.get('param', {}).get('passwd', '').lower()
+
+        if account == '' or user_name == '' or passwd == '':
+            response['err_code'] = errors['input cannot be null']
+            response['err_msg'] = 'input cannot be null'
+            self.write(tornado.escape.json_encode(response))
+            logging.info('input cannot be null')
+            return
+
         logging.info('account and passwd in payload: '+ account + ' ' + user_name + ' ' + passwd)
 
         select_sql = "select account from %s where account = '%s'" % \
@@ -62,7 +71,7 @@ class SignUpHandler(tornado.web.RequestHandler):
                 self.write(tornado.escape.json_encode(response))
                 return
             expiration_time = datetime.datetime.now() + token_timedelta
-            token = Encryption.encode({'uid': uid, 'expiration_time': str(expiration_time)})
+            token = Encryption.encode({'uid': uid[0][0], 'expiration_time': str(expiration_time), 'type': 'log_in'})
             response['result'] = {'account': account, 'user_name': user_name, 'token': token}
             self.write(tornado.escape.json_encode(response))
             return
